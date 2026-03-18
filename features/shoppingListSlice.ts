@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ShoppingItem, ShoppingState } from "../types/shopping";
+import {
+  ShoppingItem,
+  ShoppingItemPayload,
+  ShoppingState,
+} from "../types/shopping";
 
 const initialState: ShoppingState = {
   items: [],
@@ -9,14 +13,11 @@ const shoppingSlice = createSlice({
   name: "shoppingList",
   initialState,
   reducers: {
-    addItem: (
-      state,
-      action: PayloadAction<{ name: string; quantity: string }>
-    ) => {
+    addItem: (state, action: PayloadAction<ShoppingItemPayload>) => {
       const newItem: ShoppingItem = {
         id: Date.now().toString(),
         name: action.payload.name,
-        quantity: action.payload.quantity || "1",
+        quantity: action.payload.quantity || 0,
         completed: false,
       };
       state.items.push(newItem);

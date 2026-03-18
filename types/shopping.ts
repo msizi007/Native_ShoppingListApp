@@ -1,8 +1,13 @@
 export interface ShoppingItem {
   id: string;
   name: string;
-  quantity: string;
+  quantity: number;
   completed: boolean;
+}
+
+export interface ShoppingItemPayload {
+  name: string;
+  quantity: number;
 }
 
 export interface ShoppingState {
