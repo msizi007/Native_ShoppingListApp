@@ -4,20 +4,32 @@ import React, { useState } from "react";
 import {
   Alert,
   FlatList,
+  Modal,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { addItem, deleteItem, toggleItem } from "../features/shoppingListSlice";
+// Added updateItem to imports
+import {
+  addItem,
+  deleteItem,
+  editItem,
+  toggleItem,
+} from "../features/shoppingListSlice";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { ShoppingItem } from "../types/shopping";
 
 export default function Index() {
   const [name, setName] = useState<string>("");
-  // Change state to string to match TextInput expectations
   const [quantity, setQuantity] = useState<string>("");
+
+  // Modal & Edit States
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editQuantity, setEditQuantity] = useState("");
 
   const items = useAppSelector((state) => state.shopping.items);
   const dispatch = useAppDispatch();
@@ -27,13 +39,31 @@ export default function Index() {
       Alert.alert("Required", "Please enter an item name.");
       return;
     }
-
-    // Convert string to number for the Redux action
     const qtyValue = quantity.trim() === "" ? 1 : parseInt(quantity, 10);
-
     dispatch(addItem({ name, quantity: qtyValue }));
     setName("");
     setQuantity("");
+  };
+
+  const openEditModal = (item: ShoppingItem) => {
+    setEditingItem(item);
+    setEditName(item.name);
+    setEditQuantity(item.quantity.toString());
+    setIsEditModalVisible(true);
+  };
+
+  const handleUpdate = () => {
+    if (editingItem && editName.trim()) {
+      dispatch(
+        editItem({
+          ...editingItem,
+          name: editName,
+          quantity: parseInt(editQuantity, 10) || 1,
+        }),
+      );
+      setIsEditModalVisible(false);
+      setEditingItem(null);
+    }
   };
 
   const renderItem = ({ item }: { item: ShoppingItem }) => (
@@ -52,10 +82,18 @@ export default function Index() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => dispatch(deleteItem(item.id))}>
-        {/* Fixed icon name: closecircleo or closecircle are valid AntDesign names */}
-        <AntDesign name="close-circle" size={24} color="#FF3B30" />
-      </TouchableOpacity>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          onPress={() => openEditModal(item)}
+          style={styles.iconButton}
+        >
+          <AntDesign name="edit" size={22} color="#007AFF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => dispatch(deleteItem(item.id))}>
+          <AntDesign name="close-circle" size={22} color="#FF3B30" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -63,6 +101,7 @@ export default function Index() {
     <View style={styles.container}>
       <Text style={styles.header}>Shopping List</Text>
 
+      {/* Input Section */}
       <View style={styles.inputGroup}>
         <TextInput
           placeholder="Item name..."
@@ -103,18 +142,59 @@ export default function Index() {
           </View>
         }
       />
+
+      {/* Edit Modal */}
+      <Modal
+        visible={isEditModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalHeader}>Edit Item</Text>
+
+            <TextInput
+              style={styles.modalInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Item name"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              value={editQuantity}
+              onChangeText={setEditQuantity}
+              keyboardType="numeric"
+              placeholder="Quantity"
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.cancelBtn]}
+                onPress={() => setIsEditModalVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.saveBtn]}
+                onPress={handleUpdate}
+              >
+                <Text style={styles.saveBtnText}>Save Changes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // ... existing styles ...
   container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
-  header: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 20,
-    color: "#000",
-  },
+  header: { fontSize: 28, fontWeight: "800", marginBottom: 20, color: "#000" },
   inputGroup: {
     flexDirection: "row",
     alignItems: "center",
@@ -152,13 +232,13 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
     paddingVertical: 12,
-    paddingHorizontal: 5,
     borderBottomWidth: 1,
     borderBottomColor: "#f4f4f4",
   },
   itemInfo: { flex: 1, flexDirection: "row", alignItems: "center" },
+  actionButtons: { flexDirection: "row", alignItems: "center", gap: 15 },
+  iconButton: { padding: 4 },
   checkbox: {
     width: 22,
     height: 22,
@@ -177,6 +257,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 50,
   },
   iconCircle: {
     width: 100,
@@ -193,8 +274,43 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 4,
   },
-  emptySubtext: {
-    fontSize: 14,
-    color: "#999",
+  emptySubtext: { fontSize: 14, color: "#999" },
+
+  // New Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
+  modalContent: {
+    backgroundColor: "#fff",
+    width: "100%",
+    borderRadius: 20,
+    padding: 25,
+    elevation: 5,
+  },
+  modalHeader: { fontSize: 20, fontWeight: "800", marginBottom: 20 },
+  modalInput: {
+    backgroundColor: "#f9f9f9",
+    borderRadius: 12,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: "#eee",
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  modalActions: { flexDirection: "row", gap: 10, marginTop: 10 },
+  modalBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelBtn: { backgroundColor: "#f5f5f5" },
+  saveBtn: { backgroundColor: "#000" },
+  cancelBtnText: { color: "#666", fontWeight: "600" },
+  saveBtnText: { color: "#fff", fontWeight: "600" },
 });
