@@ -45,3 +45,11 @@ NATIVE_SHOPPINGLISTAPP/
 ├── store.ts              # Redux store configuration
 └── tsconfig.json         # TypeScript configuration settings
 ```
+
+#### Tech Stack
+- React Native
+- Expo Router
+- Redux Toolkit
+- React Redux
+- AsyncStorage
+- TypeScript
