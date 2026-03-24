@@ -1,8 +1,9 @@
 # ShoppingList App
+![Native_ShoppingListApp](https://socialify.git.ci/msizi007/Native_ShoppingListApp/image?language=1&owner=1&name=1&stargazers=1&theme=Light)
 
 A sleek, performant, and intuitive React Native shopping list application built with Expo, Redux Toolkit, and TypeScript. Designed to make grocery trips organized and stress-free.
 
-## Get started
+#### Get started
 
 1. Install dependencies
 
@@ -15,7 +16,9 @@ A sleek, performant, and intuitive React Native shopping list application built 
    ```bash
    npm start
    ```
+
 #### Project Structure
+
 ```bash
 NATIVE_SHOPPINGLISTAPP/
 ├── .expo/                # Expo configuration and cache
@@ -47,6 +50,7 @@ NATIVE_SHOPPINGLISTAPP/
 ```
 
 #### Tech Stack
+
 - React Native
 - Expo Router
 - Redux Toolkit
