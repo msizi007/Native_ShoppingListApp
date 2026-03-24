@@ -57,3 +57,6 @@ NATIVE_SHOPPINGLISTAPP/
 - React Redux
 - AsyncStorage
 - TypeScript
+
+#### Author
+M.S Mwelase
